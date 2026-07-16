@@ -197,16 +197,39 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 // ── APPS SCRIPT URL — buraya kendi URL'nizi yapıştırın ────────
 var API = 'https://script.google.com/macros/s/AKfycbyVg3-dMUjNRxegrwfnON2F88lMhol1ugM57DlfmRXMjQKt0Oq82R5zc80W2_NcTP4y1g/exec';
 
-// ── API ÇAĞRISI (GET + callback — Apps Script CORS uyumlu) ──
+// ── API ÇAĞRISI — JSONP (CORS yok, Apps Script uyumlu) ───────
+var _cbIdx = 0;
 function api(action, data) {
-  var params = '?action=' + encodeURIComponent(action);
-  if (data && Object.keys(data).length) {
-    params += '&data=' + encodeURIComponent(JSON.stringify(data));
-  }
-  return fetch(API + params, {
-    method: 'GET',
-    redirect: 'follow'
-  }).then(function(r) { return r.json(); });
+  return new Promise(function(resolve, reject) {
+    var cbName = '_cb' + (++_cbIdx);
+    var timer = setTimeout(function() {
+      delete window[cbName];
+      var s = document.getElementById(cbName);
+      if (s) s.parentNode.removeChild(s);
+      reject(new Error('Zaman aşımı'));
+    }, 15000);
+    window[cbName] = function(result) {
+      clearTimeout(timer);
+      delete window[cbName];
+      var s = document.getElementById(cbName);
+      if (s) s.parentNode.removeChild(s);
+      resolve(result);
+    };
+    var params = '?callback=' + cbName + '&action=' + encodeURIComponent(action);
+    if (data && typeof data === 'object' && Object.keys(data).length) {
+      params += '&data=' + encodeURIComponent(JSON.stringify(data));
+    }
+    var script = document.createElement('script');
+    script.id = cbName;
+    script.src = API + params;
+    script.onerror = function() {
+      clearTimeout(timer);
+      delete window[cbName];
+      script.parentNode.removeChild(script);
+      reject(new Error('Script yüklenemedi'));
+    };
+    document.head.appendChild(script);
+  });
 }
 
 // ── STATE ─────────────────────────────────────────────────────
