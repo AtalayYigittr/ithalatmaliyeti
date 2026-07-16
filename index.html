@@ -197,11 +197,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 // ── APPS SCRIPT URL — buraya kendi URL'nizi yapıştırın ────────
 var API = 'https://script.google.com/macros/s/AKfycbyVg3-dMUjNRxegrwfnON2F88lMhol1ugM57DlfmRXMjQKt0Oq82R5zc80W2_NcTP4y1g/exec';
 
-// ── API ÇAĞRISI ───────────────────────────────────────────────
+// ── API ÇAĞRISI (GET + callback — Apps Script CORS uyumlu) ──
 function api(action, data) {
-  return fetch(API, {
-    method: 'POST',
-    body: JSON.stringify({action: action, data: data || {}})
+  var params = '?action=' + encodeURIComponent(action);
+  if (data && Object.keys(data).length) {
+    params += '&data=' + encodeURIComponent(JSON.stringify(data));
+  }
+  return fetch(API + params, {
+    method: 'GET',
+    redirect: 'follow'
   }).then(function(r) { return r.json(); });
 }
 
