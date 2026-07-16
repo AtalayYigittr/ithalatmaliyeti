@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>İthalat Maliyet Hesaplayıcı</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#F3F6FA;color:#1a1a2e;min-height:100vh}
+.topbar{background:#185FA5;color:#fff;padding:11px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.topbar h1{font-size:15px;font-weight:600;display:flex;align-items:center;gap:7px}
+.topbar-r{display:flex;align-items:center;gap:10px}
+.slink{color:rgba(255,255,255,.8);font-size:12px;display:none;align-items:center;gap:4px;text-decoration:none}
+.slink:hover{color:#fff}
+.upill{background:rgba(255,255,255,.15);border-radius:20px;padding:4px 12px;font-size:12px;display:flex;align-items:center;gap:6px}
+.wrap{max-width:980px;margin:0 auto;padding:18px 16px}
+.tabs{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
+.tab{padding:7px 15px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid #D1D9E6;background:#fff;color:#555}
+.tab.on{background:#185FA5;color:#fff;border-color:#185FA5}
+.pane{display:none}.pane.on{display:block}
+.card{background:#fff;border-radius:12px;padding:18px 20px;margin-bottom:14px;border:1px solid #E2E8F0}
+.ct{font-size:11px;font-weight:600;color:#6B7A99;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.fld{display:flex;flex-direction:column;gap:5px}
+.fld label{font-size:11px;font-weight:600;color:#6B7A99;text-transform:uppercase;letter-spacing:.04em}
+.fld input{height:38px;border:1px solid #D1D9E6;border-radius:8px;padding:0 10px;font-size:14px;color:#1a1a2e;background:#FAFBFD;width:100%}
+.fld input:focus{outline:none;border-color:#185FA5;background:#fff;box-shadow:0 0 0 3px rgba(24,95,165,.1)}
+.fld input.ok{border-color:#0F6E56 !important;background:#F0FBF7 !important}
+.sx{position:relative}.sx input{padding-right:34px}
+.sx span{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;color:#9AA5BE;pointer-events:none;font-weight:500}
+.bcalc{background:#185FA5;color:#fff;border:none;border-radius:10px;height:44px;font-size:14px;font-weight:600;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px}
+.bcalc:hover{background:#0C447C}
+.bgrn{background:#0F6E56;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px}
+.bgrn:hover{background:#085041}
+.bgrn:disabled,.bcalc:disabled{background:#9AA5BE;cursor:not-allowed}
+.bout{background:#fff;border:1px solid #D1D9E6;border-radius:8px;padding:7px 13px;font-size:12px;font-weight:500;cursor:pointer;color:#555;display:flex;align-items:center;gap:5px}
+.bout:hover{background:#F3F6FA}
+.bred{background:none;border:none;color:#C0392B;cursor:pointer;padding:4px 8px;border-radius:6px;font-size:13px;line-height:1}
+.bred:hover{background:#FEF2F2}
+.lbox{background:linear-gradient(135deg,#0F6E56,#185FA5);border-radius:12px;padding:18px 22px;color:#fff;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:12px}
+.ll{font-size:11px;opacity:.8;margin-bottom:3px}
+.lv{font-size:30px;font-weight:700}
+.ls{font-size:11px;opacity:.7;margin-top:2px}
+.mets{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+.met{background:#F3F6FA;border-radius:10px;padding:12px 14px;border:1px solid #E2E8F0}
+.met .ml{font-size:11px;color:#6B7A99;margin-bottom:3px}
+.met .mv{font-size:16px;font-weight:600}
+.met .mv.bl{color:#185FA5}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;padding:8px 10px;border-bottom:2px solid #E2E8F0;color:#6B7A99;font-size:11px;font-weight:600;text-transform:uppercase}
+.tbl td{padding:7px 10px;border-bottom:1px solid #F0F4FA}
+.tbl .num{text-align:right;font-family:monospace}
+.tbl tr.sb td{background:#F3F6FA;font-weight:600}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.sc{background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.sc:hover{box-shadow:0 2px 10px rgba(24,95,165,.12)}
+.sc-top{display:flex;justify-content:space-between;align-items:flex-start}
+.sc-gtip{font-family:monospace;font-size:13px;font-weight:700;color:#185FA5;background:#EBF4FF;padding:3px 8px;border-radius:4px}
+.sc-name{font-size:13px;font-weight:600;margin-top:4px}
+.sc-rates{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}
+.rb{font-size:11px;background:#F3F6FA;border:1px solid #E2E8F0;border-radius:4px;padding:2px 7px;color:#444;font-weight:500}
+.rb.has{background:#EBF4FF;border-color:#B5D4F4;color:#185FA5}
+.sc-meta{font-size:11px;color:#9AA5BE;margin-top:2px}
+.sc-btn{background:#185FA5;color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:5px}
+.sc-btn:hover{background:#0C447C}
+.hrr{padding:11px 16px;border-bottom:1px solid #F0F4FA;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+.hrr:hover{background:#F8FAFF}
+.hrr:last-child{border-bottom:none}
+.hi{font-size:13px;font-weight:500;margin-bottom:3px}
+.hm{font-size:11px;color:#9AA5BE}
+.hl{font-size:17px;font-weight:700;color:#0F6E56;text-align:right}
+.hs{font-size:11px;color:#9AA5BE;text-align:right}
+.bdg{display:inline-block;background:#EBF4FF;color:#185FA5;font-size:11px;padding:2px 7px;border-radius:4px;font-family:monospace;font-weight:600}
+.wbox{background:#FFF8E1;border:1px solid #FFD54F;border-radius:8px;padding:9px 13px;font-size:12px;color:#6B4800;display:flex;gap:7px;align-items:center;margin-bottom:12px}
+.empty{text-align:center;padding:36px;color:#9AA5BE}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:#fff;padding:9px 18px;border-radius:10px;font-size:13px;font-weight:500;z-index:9999;display:none;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,.25);max-width:90vw}
+.toast.show{display:flex}
+.toast.ok{background:#0F6E56}
+.toast.err{background:#A32D2D}
+.spin{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.qbar{background:#F0FBF7;border:1px solid #9FE1CB;border-radius:10px;padding:14px 16px;margin-bottom:14px;display:none}
+.qbar.show{display:block}
+.qtitle{font-size:12px;font-weight:600;color:#0F6E56;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+@media(max-width:620px){.g3,.g4{grid-template-columns:1fr 1fr}.g2{grid-template-columns:1fr}.lbox{flex-direction:column}.sgrid{grid-template-columns:1fr}}
+@media(max-width:380px){.g2,.g3,.g4{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1><i class="fa fa-ship"></i> İthalat Maliyet Hesaplayıcı</h1>
+  <div class="topbar-r">
+    <a id="el-slink" href="#" target="_blank" class="slink"><i class="fa fa-table-cells"></i> Sheets</a>
+    <div class="upill"><i class="fa fa-circle-user"></i> <span id="el-user">–</span></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="tabs">
+    <div id="tab-h" class="tab on" onclick="goTab('h')"><i class="fa fa-calculator"></i> Hesaplayıcı</div>
+    <div id="tab-s" class="tab" onclick="goTab('s')"><i class="fa fa-bookmark"></i> GTİP Şablonları <span id="el-scnt" style="background:rgba(24,95,165,.12);color:#185FA5;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:2px">0</span></div>
+    <div id="tab-g" class="tab" onclick="goTab('g')"><i class="fa fa-clock-rotate-left"></i> Ekip Geçmişi</div>
+  </div>
+
+  <!-- HESAPLAYICI -->
+  <div id="pane-h" class="pane on">
+    <div class="card">
+      <div class="ct"><i class="fa fa-tag"></i> Ürün Bilgileri</div>
+      <div class="g2" style="margin-bottom:12px">
+        <div class="fld">
+          <label>GTİP Numarası</label>
+          <input type="text" id="i-gtip" placeholder="0000.00.00.00.00" maxlength="20" oninput="onGtipInput(this.value)">
+        </div>
+        <div class="fld">
+          <label>Ürün Grubu / Açıklama</label>
+          <input type="text" id="i-urun" placeholder="Örn: Elektronik, Tekstil...">
+        </div>
+      </div>
+      <div class="qbar" id="el-qbar">
+        <div class="qtitle"><i class="fa fa-bolt"></i> Şablon yüklendi — adet ve fiyat girin, LAND anlık hesaplanır</div>
+        <div class="g4">
+          <div class="fld"><label>Adet</label><input type="number" id="q-adet" placeholder="1" min="1" oninput="qCalc()"></div>
+          <div class="fld sx"><label>FOB Birim ($)</label><input type="number" id="q-fob" placeholder="0.00" step="0.01" oninput="qCalc()"><span>$</span></div>
+          <div class="fld sx"><label>Navlun ($)</label><input type="number" id="q-nav" placeholder="0.00" step="0.01" oninput="qCalc()"><span>$</span></div>
+          <div class="fld sx"><label>Sigorta ($)</label><input type="number" id="q-sig" placeholder="0.00" step="0.01" oninput="qCalc()"><span>$</span></div>
+        </div>
+        <div id="el-qres" style="margin-top:10px"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div class="ct" style="margin:0"><i class="fa fa-percent"></i> Vergi Oranları & Gözetim</div>
+        <button class="bout" id="btn-sablon" onclick="doSaveGtip()"><i class="fa fa-bookmark"></i> GTİP Şablonuna Kaydet</button>
+      </div>
+      <div class="g3">
+        <div class="fld sx"><label>Gümrük Vergisi</label><input type="number" id="i-gv" placeholder="0" min="0" max="100" step="0.1"><span>%</span></div>
+        <div class="fld sx"><label>İlave Gümrük Vergisi</label><input type="number" id="i-igv" placeholder="0" min="0" max="100" step="0.1"><span>%</span></div>
+        <div class="fld sx"><label>KDV</label><input type="number" id="i-kdv" placeholder="20" min="0" max="100" step="0.1"><span>%</span></div>
+        <div class="fld sx"><label>ÖTV</label><input type="number" id="i-otv" placeholder="0" min="0" max="300" step="0.1"><span>%</span></div>
+        <div class="fld sx"><label>TRT Bandrol</label><input type="number" id="i-trt" placeholder="0" min="0" max="100" step="0.1"><span>%</span></div>
+        <div class="fld sx"><label>Gözetim Değeri (birim $)</label><input type="number" id="i-goz" placeholder="0.00" min="0" step="0.01"><span>$</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ct"><i class="fa fa-boxes-stacked"></i> Maliyet Kalemleri</div>
+      <div class="g4">
+        <div class="fld"><label>Adet</label><input type="number" id="i-adet" placeholder="1" min="1"></div>
+        <div class="fld sx"><label>FOB Birim ($)</label><input type="number" id="i-fob" placeholder="0.00" step="0.01"><span>$</span></div>
+        <div class="fld sx"><label>Navlun ($)</label><input type="number" id="i-nav" placeholder="0.00" step="0.01"><span>$</span></div>
+        <div class="fld sx"><label>Sigorta ($)</label><input type="number" id="i-sig" placeholder="0.00" step="0.01"><span>$</span></div>
+        <div class="fld sx"><label>Antrepo ($)</label><input type="number" id="i-ant" placeholder="0.00" step="0.01"><span>$</span></div>
+        <div class="fld sx"><label>Gümrükçü ($)</label><input type="number" id="i-gcu" placeholder="0.00" step="0.01"><span>$</span></div>
+        <div class="fld sx"><label>TSE / Tareks ($)</label><input type="number" id="i-trk" placeholder="0.00" step="0.01"><span>$</span></div>
+      </div>
+      <button class="bcalc" id="btn-hesapla" onclick="doHesapla()"><i class="fa fa-equals"></i> Hesapla</button>
+    </div>
+
+    <div id="el-res"></div>
+  </div>
+
+  <!-- GTİP ŞABLONLARI -->
+  <div id="pane-s" class="pane">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div class="ct" style="margin:0"><i class="fa fa-bookmark"></i> Kayıtlı GTİP Şablonları</div>
+        <button class="bout" onclick="loadGtipList()"><i class="fa fa-arrows-rotate"></i> Yenile</button>
+      </div>
+      <div id="el-slist"><div class="empty"><i class="fa fa-spinner fa-spin"></i> Yükleniyor...</div></div>
+    </div>
+  </div>
+
+  <!-- EKİP GEÇMİŞİ -->
+  <div id="pane-g" class="pane">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div class="ct" style="margin:0"><i class="fa fa-users"></i> Ekip Hesaplamaları</div>
+        <button class="bout" onclick="loadHesapList()"><i class="fa fa-arrows-rotate"></i> Yenile</button>
+      </div>
+      <div id="el-hlist"><div class="empty"><i class="fa fa-spinner fa-spin"></i> Yükleniyor...</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="el-toast"></div>
+
+<script>
+// ── STATE ─────────────────────────────────────────────────────
+var STATE = { hesap: null, gtipList: [] };
+
+// ── YARDIMCILAR ───────────────────────────────────────────────
+function n(id) {
+  var el = document.getElementById(id);
+  return el ? (parseFloat(el.value) || 0) : 0;
+}
+function t(id) {
+  var el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+function set(id, val) {
+  var el = document.getElementById(id);
+  if (el) el.value = val;
+}
+function fmt(x) {
+  return Number(x).toLocaleString('tr-TR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function pct(x) {
+  return x > 0 ? x.toFixed(1) + '%' : '0%';
+}
+
+// ── TOAST ─────────────────────────────────────────────────────
+function toast(msg, tp, ms) {
+  var el = document.getElementById('el-toast');
+  var ico = tp === 'ok' ? 'fa-circle-check' : tp === 'err' ? 'fa-circle-xmark' : 'fa-circle-info';
+  el.className = 'toast ' + (tp || '');
+  el.innerHTML = '<i class="fa ' + ico + '"></i> ' + msg;
+  el.classList.add('show');
+  setTimeout(function() { el.classList.remove('show'); }, ms || 3500);
+}
+
+// ── TABS ──────────────────────────────────────────────────────
+function goTab(id) {
+  var ids = ['h', 's', 'g'];
+  for (var i = 0; i < ids.length; i++) {
+    document.getElementById('tab-' + ids[i]).classList.toggle('on', ids[i] === id);
+    document.getElementById('pane-' + ids[i]).classList.toggle('on', ids[i] === id);
+  }
+  if (id === 's') loadGtipList();
+  if (id === 'g') loadHesapList();
+}
+
+// ── HESAP MOTORU ──────────────────────────────────────────────
+function calcCore(adet, fob, nav, sig, ant, gcu, trk) {
+  var ft  = fob * adet;
+  var cif = ft + nav + sig;
+  var gp  = n('i-gv')  / 100;
+  var ip  = n('i-igv') / 100;
+  var kp  = n('i-kdv') / 100;
+  var op  = n('i-otv') / 100;
+  var tp  = n('i-trt') / 100;
+  var gz  = n('i-goz');
+  var mat = cif;
+  var gw  = false;
+  if (gz > 0 && gz * adet > cif) { mat = gz * adet; gw = true; }
+  var gv  = mat * gp;
+  var iv  = mat * ip;
+  var tv  = mat * tp;
+  var om  = mat + gv + iv + tv;
+  var ov  = om * op;
+  var km  = om + ov;
+  var kv  = km * kp;
+  var tver = gv + iv + tv + ov + kv;
+  var tod  = ft + nav + sig + tver + ant + gcu + trk;
+  return {
+    adet:adet, fob_birim:fob, fob_toplam:ft,
+    navlun:nav, sigorta:sig, cif:cif,
+    gozeti:gz, matrah:mat, gozeti_warn:gw,
+    gumruk_pct:gp*100, igv_pct:ip*100, kdv_pct:kp*100, otv_pct:op*100, trt_pct:tp*100,
+    gumruk_tl:gv, igv_tl:iv, trt_tl:tv, otv_tl:ov, kdv_tl:kv,
+    antrepo:ant, gumrukcu:gcu, tareks:trk,
+    toplam_vergi:tver, toplam_odeme:tod, land_birim:tod/adet
+  };
+}
+
+// ── HIZLI HESAP ───────────────────────────────────────────────
+function qCalc() {
+  var fob = parseFloat(document.getElementById('q-fob').value) || 0;
+  if (!fob) { document.getElementById('el-qres').innerHTML = ''; return; }
+  var a = Math.max(1, parseFloat(document.getElementById('q-adet').value) || 1);
+  var nav = parseFloat(document.getElementById('q-nav').value) || 0;
+  var sig = parseFloat(document.getElementById('q-sig').value) || 0;
+  var r = calcCore(a, fob, nav, sig, 0, 0, 0);
+  document.getElementById('el-qres').innerHTML =
+    '<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">' +
+    '<div><div style="font-size:11px;color:#0F6E56;font-weight:600">KDV\'li LAND (birim)</div>' +
+    '<div style="font-size:22px;font-weight:700;color:#0F6E56">$' + fmt(r.land_birim) + '</div></div>' +
+    '<div style="font-size:12px;color:#555">' +
+    '· CIF: $' + fmt(r.cif) + '<br>' +
+    '· Toplam vergi: $' + fmt(r.toplam_vergi) + '<br>' +
+    '· Toplam ödeme: $' + fmt(r.toplam_odeme) +
+    '</div></div>';
+}
+
+// ── TAM HESAPLA ───────────────────────────────────────────────
+function doHesapla() {
+  var a   = Math.max(1, n('i-adet') || 1);
+  var fob = n('i-fob');
+  var nav = n('i-nav');
+  var sig = n('i-sig');
+  var ant = n('i-ant');
+  var gcu = n('i-gcu');
+  var trk = n('i-trk');
+  var gtip = t('i-gtip');
+  var urun = t('i-urun');
+
+  var r = calcCore(a, fob, nav, sig, ant, gcu, trk);
+
+  STATE.hesap = {
+    gtip:gtip, urun:urun,
+    adet:r.adet, fob_birim:r.fob_birim, fob_toplam:r.fob_toplam,
+    navlun:r.navlun, sigorta:r.sigorta, cif:r.cif,
+    gozeti:r.gozeti, matrah:r.matrah,
+    gumruk_pct:r.gumruk_pct, gumruk_tl:r.gumruk_tl,
+    igv_pct:r.igv_pct, igv_tl:r.igv_tl,
+    trt_pct:r.trt_pct, trt_tl:r.trt_tl,
+    otv_pct:r.otv_pct, otv_tl:r.otv_tl,
+    kdv_pct:r.kdv_pct, kdv_tl:r.kdv_tl,
+    antrepo:r.antrepo, gumrukcu:r.gumrukcu, tareks:r.tareks,
+    toplam_vergi:r.toplam_vergi, toplam_odeme:r.toplam_odeme, land_birim:r.land_birim
+  };
+
+  var h = '';
+  h += '<div class="lbox">';
+  h += '<div><div class="ll">KDV\'li LAND Değeri (birim)</div>';
+  h += '<div class="lv">$' + fmt(r.land_birim) + '</div>';
+  h += '<div class="ls">' + a + ' adet &mdash; Toplam: $' + fmt(r.toplam_odeme) + '</div></div>';
+  h += '<button class="bgrn" id="btn-kaydet" onclick="doKaydet()">';
+  h += '<i class="fa fa-floppy-disk"></i> Sheets\'e Kaydet</button></div>';
+
+  if (r.gozeti_warn) {
+    h += '<div class="wbox"><i class="fa fa-triangle-exclamation"></i> ';
+    h += 'Gözetim değeri CIF üzerinde — matrah gözetim değeri baz alındı.</div>';
+  }
+
+  h += '<div class="card">';
+  if (gtip || urun) {
+    h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">';
+    if (gtip) h += '<span class="bdg">' + gtip + '</span>';
+    if (urun) h += '<span style="font-size:14px;font-weight:600">' + urun + '</span>';
+    h += '</div>';
+  }
+
+  h += '<div class="mets">';
+  h += met('FOB Toplam', '$' + fmt(r.fob_toplam), '');
+  h += met('CIF Toplam', '$' + fmt(r.cif), '');
+  h += met('Gümrük Matrahı', '$' + fmt(r.matrah), 'bl');
+  h += met('Toplam Vergi', '$' + fmt(r.toplam_vergi), 'bl');
+  h += '</div>';
+
+  h += '<table class="tbl"><thead><tr>';
+  h += '<th>Kalem</th><th>Oran</th><th class="num">Tutar (USD)</th>';
+  h += '</tr></thead><tbody>';
+  h += row('FOB Bedeli (toplam)', '—', '$' + fmt(r.fob_toplam), 0);
+  h += row('Navlun', '—', '$' + fmt(r.navlun), 0);
+  h += row('Sigorta', '—', '$' + fmt(r.sigorta), 0);
+  h += row('CIF Toplam', '—', '$' + fmt(r.cif), 1);
+  h += row('Gümrük Vergisi', pct(r.gumruk_pct), '$' + fmt(r.gumruk_tl), 0);
+  h += row('İlave Gümrük Vergisi', pct(r.igv_pct), '$' + fmt(r.igv_tl), 0);
+  h += row('TRT Bandrol', pct(r.trt_pct), '$' + fmt(r.trt_tl), 0);
+  h += row('ÖTV', pct(r.otv_pct), '$' + fmt(r.otv_tl), 0);
+  h += row('KDV', pct(r.kdv_pct), '$' + fmt(r.kdv_tl), 0);
+  h += row('Antrepo', '—', '$' + fmt(r.antrepo), 0);
+  h += row('Gümrükçü Ücreti', '—', '$' + fmt(r.gumrukcu), 0);
+  h += row('TSE / Tareks', '—', '$' + fmt(r.tareks), 0);
+  h += row('TOPLAM ÖDEME', '—', '$' + fmt(r.toplam_odeme), 1);
+  h += '</tbody></table></div>';
+
+  document.getElementById('el-res').innerHTML = h;
+}
+
+function met(l, v, c) {
+  return '<div class="met"><div class="ml">' + l + '</div><div class="mv ' + c + '">' + v + '</div></div>';
+}
+function row(l, r, v, s) {
+  return '<tr class="' + (s ? 'sb' : '') + '"><td>' + l + '</td><td style="color:#9AA5BE">' + r + '</td><td class="num">' + v + '</td></tr>';
+}
+
+// ── SHEETS'E KAYDET ───────────────────────────────────────────
+function doKaydet() {
+  if (!STATE.hesap) { toast('Önce hesaplama yapın.', 'err'); return; }
+  var btn = document.getElementById('btn-kaydet');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Kaydediliyor...';
+  google.script.run
+    .withSuccessHandler(function(r) {
+      if (r.ok) {
+        toast('Kaydedildi: ' + r.kullanici, 'ok');
+        btn.innerHTML = '<i class="fa fa-check"></i> Kaydedildi';
+      } else {
+        toast('Hata: ' + r.hata, 'err');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa fa-floppy-disk"></i> Sheets\'e Kaydet';
+      }
+    })
+    .withFailureHandler(function(e) {
+      toast('Sunucu hatası: ' + e.message, 'err');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa fa-floppy-disk"></i> Sheets\'e Kaydet';
+    })
+    .saveHesaplama(STATE.hesap);
+}
+
+// ── GTİP ŞABLON KAYDET ────────────────────────────────────────
+function doSaveGtip() {
+  var gtip = t('i-gtip');
+  if (!gtip) { toast('GTİP numarası giriniz.', 'err'); return; }
+  var d = {
+    gtip:      gtip,
+    urun:      t('i-urun'),
+    gumruk_pct: n('i-gv'),
+    igv_pct:   n('i-igv'),
+    kdv_pct:   n('i-kdv'),
+    otv_pct:   n('i-otv'),
+    trt_pct:   n('i-trt'),
+    gozeti:    n('i-goz')
+  };
+  var btn = document.getElementById('btn-sablon');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin" style="border-color:rgba(0,0,0,.15);border-top-color:#185FA5"></span> Kaydediliyor...';
+  google.script.run
+    .withSuccessHandler(function(r) {
+      if (r.ok) {
+        toast(r.updated ? 'GTİP güncellendi.' : 'GTİP şablonu kaydedildi.', 'ok');
+        btn.innerHTML = '<i class="fa fa-check"></i> Kaydedildi';
+        setTimeout(function() {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa fa-bookmark"></i> GTİP Şablonuna Kaydet';
+        }, 2000);
+        refreshGtipSilent();
+      } else {
+        toast('Hata: ' + r.hata, 'err');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa fa-bookmark"></i> GTİP Şablonuna Kaydet';
+      }
+    })
+    .withFailureHandler(function(e) {
+      toast('Sunucu hatası: ' + e.message, 'err');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa fa-bookmark"></i> GTİP Şablonuna Kaydet';
+    })
+    .saveGtip(d);
+}
+
+// ── GTİP LİSTESİ ─────────────────────────────────────────────
+function loadGtipList() {
+  document.getElementById('el-slist').innerHTML = '<div class="empty"><i class="fa fa-spinner fa-spin"></i> Yükleniyor...</div>';
+  google.script.run
+    .withSuccessHandler(function(r) {
+      STATE.gtipList = r.rows || [];
+      document.getElementById('el-scnt').textContent = STATE.gtipList.length;
+      renderGtipList();
+    })
+    .withFailureHandler(function(e) {
+      document.getElementById('el-slist').innerHTML = '<div class="empty">Yüklenemedi: ' + e.message + '</div>';
+    })
+    .getGtipList();
+}
+
+function refreshGtipSilent() {
+  google.script.run
+    .withSuccessHandler(function(r) {
+      STATE.gtipList = r.rows || [];
+      document.getElementById('el-scnt').textContent = STATE.gtipList.length;
+    })
+    .withFailureHandler(function() {})
+    .getGtipList();
+}
+
+function renderGtipList() {
+  var el = document.getElementById('el-slist');
+  if (!STATE.gtipList.length) {
+    el.innerHTML = '<div class="empty"><i class="fa fa-bookmark"></i><br>Henüz kayıtlı GTİP yok.<br><small>Hesaplayıcıda vergi oranlarını girin → "GTİP Şablonuna Kaydet"</small></div>';
+    return;
+  }
+  var html = '<div class="sgrid">';
+  for (var i = 0; i < STATE.gtipList.length; i++) {
+    var s = STATE.gtipList[i];
+    var rates = '';
+    rates += s.gumruk_pct > 0 ? '<span class="rb has">GV ' + s.gumruk_pct + '%</span>' : '<span class="rb">GV 0%</span>';
+    if (s.igv_pct > 0) rates += '<span class="rb has">İGV ' + s.igv_pct + '%</span>';
+    if (s.trt_pct > 0) rates += '<span class="rb has">TRT ' + s.trt_pct + '%</span>';
+    if (s.otv_pct > 0) rates += '<span class="rb has">ÖTV ' + s.otv_pct + '%</span>';
+    rates += '<span class="rb has">KDV ' + s.kdv_pct + '%</span>';
+    if (s.gozeti > 0) rates += '<span class="rb has">Göz. $' + s.gozeti + '</span>';
+    var idx = i;
+    html += '<div class="sc">';
+    html += '<div class="sc-top"><span class="sc-gtip">' + s.gtip + '</span>';
+    html += '<button class="bred" onclick="doDeleteGtip(' + idx + ')" title="Sil"><i class="fa fa-trash-can"></i></button></div>';
+    html += '<div class="sc-name">' + (s.urun || '—') + '</div>';
+    html += '<div class="sc-rates">' + rates + '</div>';
+    html += '<div class="sc-meta">Güncelleme: ' + (s.tarih || '—') + ' · ' + (s.kullanici || '—') + '</div>';
+    html += '<button class="sc-btn" onclick="doLoadGtip(' + idx + ')"><i class="fa fa-arrow-up-right-from-square"></i> Hesaplayıcıya Yükle</button>';
+    html += '</div>';
+  }
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function doLoadGtip(idx) {
+  var s = STATE.gtipList[idx];
+  if (!s) return;
+  set('i-gtip', s.gtip);
+  set('i-urun', s.urun);
+  set('i-gv',  s.gumruk_pct);
+  set('i-igv', s.igv_pct);
+  set('i-kdv', s.kdv_pct);
+  set('i-otv', s.otv_pct);
+  set('i-trt', s.trt_pct);
+  set('i-goz', s.gozeti);
+  var ids = ['i-gv','i-igv','i-kdv','i-otv','i-trt','i-goz'];
+  for (var i = 0; i < ids.length; i++) {
+    document.getElementById(ids[i]).classList.add('ok');
+  }
+  document.getElementById('el-qbar').classList.add('show');
+  goTab('h');
+  toast('Şablon yüklendi: ' + s.urun, 'ok');
+}
+
+function doDeleteGtip(idx) {
+  var s = STATE.gtipList[idx];
+  if (!s) return;
+  if (!confirm(s.gtip + ' şablonunu silmek istiyor musunuz?')) return;
+  google.script.run
+    .withSuccessHandler(function(r) {
+      if (r.ok) { toast('Silindi.', 'ok'); loadGtipList(); }
+      else toast('Silinemedi: ' + r.hata, 'err');
+    })
+    .withFailureHandler(function(e) { toast('Hata: ' + e.message, 'err'); })
+    .deleteGtip(s.gtip);
+}
+
+// ── GTİP INPUT — otomatik eşleştir ───────────────────────────
+function onGtipInput(val) {
+  var g = val.trim();
+  var found = null;
+  for (var i = 0; i < STATE.gtipList.length; i++) {
+    if (STATE.gtipList[i].gtip.trim() === g) { found = STATE.gtipList[i]; break; }
+  }
+  var bar = document.getElementById('el-qbar');
+  var taxIds = ['i-gv','i-igv','i-kdv','i-otv','i-trt','i-goz'];
+  if (found) {
+    set('i-urun', found.urun);
+    set('i-gv',  found.gumruk_pct);
+    set('i-igv', found.igv_pct);
+    set('i-kdv', found.kdv_pct);
+    set('i-otv', found.otv_pct);
+    set('i-trt', found.trt_pct);
+    set('i-goz', found.gozeti);
+    for (var i = 0; i < taxIds.length; i++) document.getElementById(taxIds[i]).classList.add('ok');
+    bar.classList.add('show');
+    toast('Şablon yüklendi: ' + found.urun, 'ok', 2500);
+  } else {
+    for (var i = 0; i < taxIds.length; i++) document.getElementById(taxIds[i]).classList.remove('ok');
+    bar.classList.remove('show');
+  }
+}
+
+// ── EKİP GEÇMİŞİ ─────────────────────────────────────────────
+function loadHesapList() {
+  document.getElementById('el-hlist').innerHTML = '<div class="empty"><i class="fa fa-spinner fa-spin"></i> Yükleniyor...</div>';
+  google.script.run
+    .withSuccessHandler(function(r) { renderHesapList(r); })
+    .withFailureHandler(function(e) {
+      document.getElementById('el-hlist').innerHTML = '<div class="empty">Yüklenemedi: ' + e.message + '</div>';
+    })
+    .getHesapList();
+}
+
+function renderHesapList(r) {
+  var el = document.getElementById('el-hlist');
+  if (!r.rows || !r.rows.length) {
+    el.innerHTML = '<div class="empty"><i class="fa fa-database"></i><br>Henüz kayıtlı hesaplama yok.</div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < r.rows.length; i++) {
+    var h = r.rows[i];
+    html += '<div class="hrr">';
+    html += '<div><div class="hi">';
+    if (h.gtip) html += '<span class="bdg" style="font-size:10px">' + h.gtip + '</span> ';
+    html += (h.urun || '—') + '</div>';
+    html += '<div class="hm">' + h.tarih + ' · ' + h.kullanici + ' · ' + h.adet + ' adet · FOB $' + fmt(Number(h.fob_birim)) + '</div></div>';
+    html += '<div><div class="hl">$' + fmt(Number(h.land_birim)) + '</div>';
+    html += '<div class="hs">LAND birim</div></div></div>';
+  }
+  el.innerHTML = html;
+}
+
+// ── SAYFA YÜKLE ───────────────────────────────────────────────
+google.script.run
+  .withSuccessHandler(function(url) {
+    if (url) {
+      var el = document.getElementById('el-slink');
+      el.href = url;
+      el.style.display = 'flex';
+    }
+  })
+  .withFailureHandler(function() {})
+  .getSheetUrl();
+
+google.script.run
+  .withSuccessHandler(function(r) {
+    STATE.gtipList = r.rows || [];
+    document.getElementById('el-scnt').textContent = STATE.gtipList.length;
+  })
+  .withFailureHandler(function() {})
+  .getGtipList();
+</script>
+</body>
+</html>
